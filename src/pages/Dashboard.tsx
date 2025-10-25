@@ -5,7 +5,7 @@ import type { MonthlyItem, TransactionSummary } from "../types/transactions";
 import Card from "../components/Card";
 import { AArrowUp, Calendar, TrendingUp, Wallet } from "lucide-react";
 import { formatCurrency } from "../utils/formatters";
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, BarChart, CartesianGrid, XAxis, YAxis, Legend, Bar, Rectangle } from "recharts";
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, BarChart, CartesianGrid, XAxis, YAxis, Legend, Bar } from "recharts";
 
 const initialSummary: TransactionSummary = {
     balance: 0,
@@ -48,7 +48,7 @@ const Dashboard = () => {
 
     const renderPieChartLabel = (props: PieLabelRenderProps) => {
         const { name, percent } = props;
-        return `${name}: ${(percent * 100).toFixed(1)}%`;
+        return `${name}: ${((percent as number) * 100).toFixed(1)}%`;
     }
     return (
         <div className="container-app py-6">

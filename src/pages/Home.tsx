@@ -2,6 +2,7 @@ import type { JSX } from "react";
 import Button from "../components/Button"
 import { Wallet, TrendingUp, List, CreditCard } from "lucide-react"
 import { useNavigate } from "react-router";
+import Footer from "../components/Footer";
 
 
 interface Feature{
@@ -94,6 +95,7 @@ const Home =() => {
                         <Button className="mx-auto px-6 py-3" onClick={() => navigate("/login")}>Criar Conta Gratuita</Button>
                     </div>
                 </section>
+                <Footer />
             </div>
         </div>
     );

@@ -3,6 +3,7 @@ import Home from "../pages/Home";
 import Login from "../pages/Login";
 import { AuthProvider } from "../context/AuthContext";
 import Dashboard from "../pages/Dashboard";
+import Transacoes from "../pages/transacoes";
 import PrivateRoutes from "./PrivateRoutes";
 import AppLayout from "../layout/AppLayout";
 
@@ -19,6 +20,7 @@ const AppRoutes = () => {
                     <Route element={<PrivateRoutes />}>
                         <Route element={<AppLayout />}>
                             <Route path="/dashboard" element={<Dashboard />} />
+                            <Route path="/transacoes" element={<Transacoes />} />
                         </Route>
                     </Route>
                     
