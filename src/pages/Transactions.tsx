@@ -1,14 +1,13 @@
 import { AlertCircle, ArrowDown, ArrowUp, Plus, Search, Trash2 } from "lucide-react";
 import { Link } from "react-router"
-import MonthYaerSelect from "../components/MonthYaerSelect";
-import { useEffect, useState } from "react";
+import MonthYaerSelect from "../components/MonthYearSelect";
+import { useEffect, useState, useCallback, type ChangeEvent } from "react";
 import Input from "../components/Input";
 import Card from "../components/Card";
 import type { Transaction } from "../types/transactions";
-import { TransactionType } from "../types/transactions";
 import { deleteTransactions, getTransactions } from "../services/transactionService";
 import Button from "../components/Button";
-import { formatCurrency, fromatDate } from "../utils/formatters";
+import { formatCurrency, formatDate } from "../utils/formatters";
 import { toast } from "react-toastify";
 
 const Transactions = () =>{
@@ -21,13 +20,14 @@ const Transactions = () =>{
     const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
     const [deletingId, setdeletingId] = useState<string>("")
     const [searchText, setSearchText] = useState<string>("");
+    const normalizeType = (type: string) => type?.toUpperCase();
 
         const handleDelete = async (id:string): Promise<void> => {
             try {
                 setdeletingId(id);
                 await deleteTransactions(id);
                 toast.success("Transação deletada com sucesso!");
-                setTransactions((prev) => prev.filter((t) => t.id !== id));
+                setFilteredTransactions((prev) => prev.filter((t) => t.id !== id));
             } catch(err) {
                 console.error(err);
                 toast.error("Falha ao deletar a transação")
@@ -42,8 +42,7 @@ const Transactions = () =>{
             }
         }
 
-    useEffect(() => {
-        const fetchTransactionsData = async(): Promise<void> => {
+         const fetchTransactionsData = useCallback(async(): Promise<void> => {
             try {
                 setLoading(true);
                 setError("");
@@ -56,9 +55,12 @@ const Transactions = () =>{
             } finally{
                 setLoading(false);
             }
-        };
+        }, [month, year]);
+
+    useEffect(() => {
+       
         fetchTransactionsData();
-    }, [month, year]);
+    }, [fetchTransactionsData]);
 
     const handleSearchChange = (event: ChangeEvent<HTMLInputElement>): void => {
         setSearchText(event.target.value);
@@ -76,7 +78,7 @@ const Transactions = () =>{
                 flex items-center justify-center hover:bg-primary-600 transition-all"><Plus className="w-4 h-4 mr-2" />Nova Transação</Link>
             </div>
             <Card className="mb-6">
-                <MonthYaerSelect month={month} year={year} onMonthChange={setMonth} onYaerChange={setYear}/>
+                <MonthYaerSelect month={month} year={year} onMonthChange={setMonth} onYearChange={setYear}/>
             </Card>
             <Card className="mb-6">
                <Input placeholder="Buscar transações..."
@@ -94,9 +96,9 @@ const Transactions = () =>{
                     </div>
                 ): error ? (
                     <div className="p-8 text-center">
-                        <AlertCircle className="w12 h-12 text-red-500 mx-auto mb-4"/>
+                        <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4"/>
                         <p>{error}</p>
-                        <Button onClick={fetchTransactions} className="mx-auto mt-6">Tentar Novamente</Button>
+                        <Button onClick={fetchTransactionsData} className="mx-auto mt-6">Tentar Novamente</Button>
                     </div>
                 ): transactions?.length === 0 ? (
                     <div className="text-center py-12">
@@ -134,7 +136,7 @@ const Transactions = () =>{
                                     <td className="px-3 py-4 text-sm text-gray-400 whitespace-nowrap">
                                         <div className="flex items-center">
                                             <div className="mr-2">
-                                                {transaction.type === TransactionType.INCOME ? (
+                                                {normalizeType(transaction.type) === "INCOME" ? (
                                                     <ArrowUp className="w-4 h-4 text-primary-500"/>
                                                 ) : (
                                                     <ArrowDown className="w-4 h-4 text-red-500"/>
@@ -145,7 +147,7 @@ const Transactions = () =>{
                                     </td>
 
                                     <td className="px-3 py-4 text-sm  whitespace-nowrap">
-                                        {fromatDate(transaction.date)}
+                                        {formatDate(transaction.date)}
                                     </td>
 
                                      <td className="px-3 py-4 text-sm whitespace-nowrap">
@@ -156,7 +158,7 @@ const Transactions = () =>{
                                         </div>
                                     </td>
                                     <td className="px-3 py-4 whitespace-nowrap">
-                                        <span className={`${transaction.type === TransactionType.INCOME ? "text-primary-500" : "text-red-500"}`}>{formatCurrency(transaction.amount)}</span>
+                                    <span className={`${normalizeType(transaction.type) === "INCOME" ? "text-primary-500" : "text-red-500"}`}>{formatCurrency(transaction.amount)}</span>
                                     </td>
                                     <td className="px-3 py-4 whitespace-nowrap cursor-pointer">
                                         <button type="button" onClick={() => confirmDelete(transaction.id)}

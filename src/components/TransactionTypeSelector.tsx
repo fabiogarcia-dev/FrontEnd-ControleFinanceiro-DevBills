@@ -1,4 +1,4 @@
-import { TransactionType } from "../types/transactions";
+import type { TransactionType } from "../types/transactions";
 
 
 interface TransactionTypeSelectorProps {
@@ -11,13 +11,13 @@ interface TransactionTypeSelectorProps {
 const TransactionTypeSelector = ({value, onChange, id}:TransactionTypeSelectorProps) => {
     const transactionTypeButtons =[
         {
-            type: TransactionType.EXPENSE,
+            type: 'EXPENSE' as TransactionType,
             label: "Despesas",
             activeClasses: 'bg-red-500 border-red-500 text-red-700 font-medium',
             inativeClasses: 'bg-transparent border-red-300 text-red-500 hover:gb-red-50',
         },
         {
-            type: TransactionType.INCOME,
+            type: 'INCOME' as TransactionType,
             label: "Receitas",
             activeClasses: 'bg-green-500 border-green-500 text-green-700 font-medium',
             inativeClasses: 'bg-transparent border-green-300 text-green-500 hover:gb-green-50',

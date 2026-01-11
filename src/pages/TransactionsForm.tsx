@@ -1,5 +1,5 @@
-import { useEffect, useState, useId, type ChangeEvent } from "react";
-import { TransactionType } from "../types/transactions";
+import { useEffect, useState, useId, type ChangeEvent, type FormEvent } from "react";
+import type { CreateTransactionDTO, TransactionType } from "../types/transactions";
 import { getCategories } from "../services/categoryService";
 import type { Category } from "../types/category";
 import Card from "../components/Card";
@@ -9,6 +9,8 @@ import { AlertCircle, Calendar, DollarSign, Save, Tag } from "lucide-react";
 import Select from "../components/Select";
 import Button from "../components/Button";
 import { useNavigate } from "react-router"
+import { createTransaction } from "../services/transactionService";
+import { toast } from "react-toastify";
 
 interface FormData {
     description: string;
@@ -23,13 +25,14 @@ const initialFormData = {
     amount: 0,
     date: "",
     categoryId: "",
-    type: TransactionType.EXPENSE,
+    type: "EXPENSE" as TransactionType,
 }
 
 const TransactionsForm = () =>{
     const [categories, setCategories] = useState<Category[]>([]);
     const [formData, setFormData] = useState<FormData>(initialFormData)
     const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
     const formId = useId();
     const navigate = useNavigate();
 
@@ -42,10 +45,10 @@ const TransactionsForm = () =>{
 
 },[]);
 
-    const filteredCategories = categories.filter((category) => category.type === formData.type)
+    const filteredCategories = categories.filter((category) => category.type.toLowerCase() === formData.type.toLowerCase())
 
     const ValidadeForm = (): boolean => {
-        if(!formData.description || formData.amount || !formData.date || !formData.categoryId){
+        if(!formData.description || !formData.amount || !formData.date || !formData.categoryId){
             setError("Preencha todos os campos")
             return false;
     }
@@ -62,22 +65,42 @@ const TransactionsForm = () =>{
         setFormData( (prev) => ({...prev, type: itemType}));
     }
 
-    const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
-        const { name, value} = event.target;
-
-        setFormData((prev) => ({...prev, [name]: value}));
-    };
+   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
+  const { name, value } = event.target;
+  setFormData((prev) => ({
+    ...prev,
+    [name]: name === "amount" ? (value === "" ? 0 : parseFloat(value)) : value,
+  }));
+};
 
     const handleSubmit = async (event: FormEvent): Promise<void> =>{
         event.preventDefault();
+        setLoading(true);
+        setError(null);
 
         try {
             if (!ValidadeForm()) {
                 return;
             }
-        } catch (error) {}
 
-        console.log(event);
+            const transactionData: CreateTransactionDTO = {
+                description: formData.description,
+                amount: formData.amount,
+                categoryId: formData.categoryId,
+                type: formData.type.toLowerCase() as "expense" | "income",
+                date: `${formData.date}T12:00:00.000Z`,
+            }
+
+            await createTransaction(transactionData);
+            toast.success("Transação adicionada com sucesso!");
+            navigate("/transacoes")
+        } catch (err) {
+            console.error(err);
+            toast.error("Falha ao adicionar transação");
+        }
+        finally {
+            setLoading(false);
+        }
     };
 
     const handleCancel = () =>{
@@ -141,7 +164,7 @@ const TransactionsForm = () =>{
                         name="categoryId"
                         value={formData.categoryId}
                         onChange={handleChange}
-                        icon={<Tag className="w-4 h4" />}
+                        icon={<Tag className="w-4 h-4" />}
                         options={[
                             {value:"", label:"Selecione uma categoria"},
                             ...filteredCategories.map((category) =>({
@@ -152,9 +175,13 @@ const TransactionsForm = () =>{
                         />
 
                         <div className="flex justify-end space-x-3 mt-2">
-                            <Button variant="outline" onClick={handleCancel} type="button">Cancelar</Button>
-                            <Button type="submit" variant={formData.type === TransactionType.EXPENSE ? "danger" : "success"}>
-                                <Save className="w-4 h-4 mr-2"/>
+                            <Button variant="outline" onClick={handleCancel} type="button" disabled={loading}>Cancelar</Button>
+                            <Button type="submit" variant={formData.type === ("EXPENSE" as TransactionType) ? "danger" : "success"} disabled={loading}>
+                                {loading ? (
+                                    <div className="flex items-center justify-center">
+                                        <div className="w-4 h-4 border-4 border-gray-700 border-t-transparent rounded-full animate-spin"></div>
+                                    </div>
+                                ): (<Save className="w-4 h-4 mr-2" />)}
                                 Salvar
                                 </Button>
                         </div>

@@ -1,10 +1,16 @@
 
 const Footer = () => {
+
+    const currentYear = new Date().getFullYear();
+
     return(
-        <div className="ml-20">
-            <h3 className="text-[#37E359] font-bold text-xl">DevBills</h3>
-            <p className="mb-10">@2025 - Todos os direitos reservados</p>
-        </div>
+        <footer className="bg-gray-800 border-t border-gray-700 py-4">
+            <div className="container-app">
+                <p className="text-sm text-gray-400 text-center">DevBills {currentYear} - Desenvolvido por <strong>Fábio Garcia</strong> com {" "}
+                    <strong>TypeScript</strong> & <strong>React</strong>
+                </p>
+            </div>
+        </footer>
     );
 };
 

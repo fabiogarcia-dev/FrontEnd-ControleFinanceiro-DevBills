@@ -5,7 +5,7 @@ export const formatCurrency = (value: number): string => {
     }).format(value);
 };
 
-export const fromatDate = (date: Date | string): string => {
+export const formatDate = (date: Date | string): string => {
     const dateObj = date instanceof Date ? date : new Date(date);
     return new Intl.DateTimeFormat("pt-BR").format(dateObj)
 }
